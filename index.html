@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>강의 덱 이어달리기</title>
+<meta name="description" content="Claude가 강의 덱을 만들고 GPT(Codex)가 검토하는 업무 자동화. 교양영어 한 차시를 다시 만들어 본 실제 기록.">
+<style>
+  :root { --ink:#16181d; --ink2:#4a505c; --ink3:#868c98; --line:#e4e6eb; --bg:#f6f7f9; --card:#fff;
+          --gpt:#0f7b6c; --gpt-soft:#e3f4f1; --cl:#b4531c; --cl-soft:#fbefe7; --code:#3d5afe; --code-soft:#eaedff; --prof:#6b4fbb; --prof-soft:#f0ecfb; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",Arial,sans-serif; line-height:1.65; word-break:keep-all; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 36px 16px 64px; }
+  .kick { font-size:13px; color:var(--ink3); letter-spacing:.02em; }
+  h1 { font-size:32px; line-height:1.25; margin:6px 0 10px; letter-spacing:-.02em; }
+  .lead { font-size:17px; color:var(--ink2); margin:0 0 18px; }
+  h2 { font-size:20px; margin:40px 0 12px; padding-bottom:6px; border-bottom:2px solid var(--line); }
+  p { margin:8px 0; }
+  .flow { display:flex; flex-wrap:wrap; gap:6px; align-items:center; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; font-size:15px; }
+  .flow span.s { padding:6px 10px; border-radius:8px; font-weight:600; }
+  .flow .a { color:var(--ink3); }
+  .g { background:var(--gpt-soft); color:var(--gpt); } .c { background:var(--cl-soft); color:var(--cl); }
+  .k { background:var(--code-soft); color:var(--code); } .p { background:var(--prof-soft); color:var(--prof); }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .box { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .box h3 { margin:0 0 6px; font-size:16px; }
+  .big { font-size:28px; font-weight:800; letter-spacing:-.02em; }
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .stat b { display:block; font-size:24px; letter-spacing:-.02em; }
+  .stat span { font-size:13px; color:var(--ink2); }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; font-size:15px; }
+  th, td { text-align:left; vertical-align:top; padding:10px 12px; border-bottom:1px solid var(--line); }
+  th { background:#f0f2f5; font-size:13px; color:var(--ink2); }
+  .tbl { overflow-x:auto; }
+  .tag { display:inline-block; font-size:12px; font-weight:700; padding:1px 8px; border-radius:6px; margin-right:4px; }
+  ul.clean { padding-left:20px; margin:6px 0; } ul.clean li { margin:4px 0; }
+  .note { font-size:14px; color:var(--ink2); background:#fff8e6; border:1px solid #f1e2b8; border-radius:10px; padding:10px 14px; margin-top:10px; }
+  .links { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .links a { display:block; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; color:inherit; text-decoration:none; }
+  .links a:hover { border-color:#b9c0cc; }
+  .links b { display:block; font-size:15px; } .links span { font-size:13px; color:var(--ink2); }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; } .chips span { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:4px 12px; font-size:14px; }
+  code { font-family:Consolas,"D2Coding",monospace; background:#eef0f3; padding:1px 6px; border-radius:5px; font-size:.92em; }
+  footer { margin-top:44px; font-size:13px; color:var(--ink3); }
+  @media (max-width: 680px) { h1 { font-size:26px; } .two, .links { grid-template-columns:1fr; } .stats { grid-template-columns:1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="kick">AI활용 바이브 코딩 실무과정 실습 2일차 · 2026-10-13 · 제주대 영어영문학과 강계유</div>
+<h1>Claude가 만들고 GPT가 검토하는 강의 덱</h1>
+<p class="lead">교양영어 강의 덱(교재 지면 · 영어 본문과 한국어 해설 · 연습 · 낭독 · 섹션 영상) 제작을 두 AI의 이어달리기로 바꿨습니다. 어제의 <a href="https://english-grading-relay.vercel.app/">과제 채점 이어달리기</a>와 같은 틀입니다.</p>
+
+<div class="flow"><span class="s c">① Claude 계획</span><span class="a">→</span><span class="s g">② GPT 계획 검토</span><span class="a">→</span><span class="s c">③ Claude 조립</span><span class="a">→</span><span class="s g">④ GPT 덱 검토</span><span class="a">→</span><span class="s c">⑤ Claude 최종</span><span class="a">→</span><span class="s p">⑥ 교수 확정</span></div>
+
+<h2>왜 — 6주차에 있었던 일</h2>
+<ul class="clean">
+<li>같은 차시를 Claude와 GPT가 각자 처음부터 만들었다. 같은 폴더에서 서로의 파일을 덮어썼다(두 과목 모두).</li>
+<li>좋은 점을 옮기는 일은 교수가 따로 요청했다. 기록을 보면 GPT의 강점은 제작보다 검토와 대조였다.</li>
+<li>→ 만드는 쪽(Claude)과 보는 쪽(GPT)을 나눴다. 덱 파일은 Claude만 쓴다.</li>
+</ul>
+
+<h2>실제로 돌려 본 결과 — 한 차시를 새 폴더에서</h2>
+<div class="stats">
+  <div class="stat"><b>56장</b><span>계획 = 최종(영상 5 · 연습 10)</span></div>
+  <div class="stat"><b>4 + 6</b><span>GPT 이의(계획 + 덱)</span></div>
+  <div class="stat"><b>7 / 10</b><span>Claude · 코드가 놓친 것</span></div>
+  <div class="stat"><b>10건</b><span>결정 · 받아들임 6 · 유지 1 · 절충 3</span></div>
+</div>
+<div class="tbl" style="margin-top:12px"><table><tr><th>단계</th><th>누가</th><th>걸린 시간</th><th>코드 검사</th></tr><tr><td>① 계획</td><td>Claude</td><td>2분 31초</td><td>56장(영상 5) · 연습 10개 · 원문 18절 · 인용 32개 대조</td></tr><tr><td>② 계획 검토</td><td>GPT</td><td>4분 04초</td><td>판정 partly · 항목 4(범위 1 · 원문 1 · 제안 2) · 전사 대조 9쪽 · 차이 2</td></tr><tr><td>③ 조립</td><td>Claude</td><td>7분 25초</td><td>51장 · 연습 10개 · 넘침 0 · 노트 누락 0 · 대본 줄 47/47 원문 일치 · ② 결정 4건</td></tr><tr><td>④ 덱 검토</td><td>GPT</td><td>9분 19초</td><td>판정 partly · 본 장 51/51 · 항목 6(제안 2 · 조작 3 · 흐름 1)</td></tr><tr><td>⑤ 최종</td><td>Claude</td><td>85분 15초 (음성 서비스 장애 대기 포함 · 마감 실행 3분 55초)</td><td>56장 · 영상 5 · 낭독 35 · 듣기 바 11 · 넘침 0 · PDF 56쪽 · 대본 줄 47/47 · 결정 10(받아들임 6 · 유지 1 · 절충 3)</td></tr></table></div>
+<div class="note">걸린 시간 = 그 AI가 차례를 확인한 때부터 코드 검사를 처음 통과한 때까지. 평소 혼자 만들 때와는 비교하지 않았습니다. 이번 판은 연습이라 게시하지 않았습니다.</div>
+
+<h2>서로 잡아 준 것</h2>
+<div class="two">
+  <div class="box"><h3>GPT → Claude</h3><ul class="clean"><li>대본 전체가 문제보다 앞에 있어 정답이 미리 보인다 → 순서 바꿈</li><li>빠진 교재 질문 하나</li><li>덱 공구의 결함 둘: 낱말 누르기 연습은 다 눌러도 100% · 빈칸에서 →는 채점되지 않는데 안내는 「Enter 또는 →」</li><li>안내 글의 잘못 · 틀린 장 번호</li></ul></div>
+  <div class="box"><h3>Claude → GPT · GPT → GPT</h3><ul class="clean"><li>지면에 없는 낱말을 「빠졌다」고 한 지적 — 원 해상도 그림으로 확인해 유지</li><li>GPT는 다음 단계에서 그 지적을 스스로 철회</li><li>GPT는 이어달리기 코드의 결함(남은 단계를 보지 않음)도 찾음</li></ul></div>
+</div>
+
+<h2>실제 제작에는 — 결정</h2>
+<p><b>Claude가 만들고, Codex 초안 검토는 한 번.</b> GPT 차례는 Claude가 <code>ask_gpt.py</code>(codex exec)로 직접 부릅니다. 계획 검토는 새 교재 · 새 단원 때만(<code>운영.md</code>에 「계획 검토: 켬」). 근거: 검토는 값어치가 있었지만(이의 7/10이 놓친 것), 비용은 GPT가 일한 13분보다 교수가 앱 사이에서 넘겨 주기를 기다린 약 35분이었습니다.</p>
+
+<h2>열어 보기</h2>
+<div class="links">
+  <a href="presentation.html"><b>발표 슬라이드</b><span>18장 · ← → 넘김 · N 메모</span></a>
+  <a href="PRD.html"><b>PRD (제품 요구사항 문서)</b><span>14항목 + 자동화 5요소</span></a>
+  <a href="PRD.pdf"><b>PRD (PDF)</b><span>A4 6쪽</span></a>
+  <a href="storyboard.png"><b>프로젝트 스토리보드</b><span>8칸 · 실제 화면</span></a>
+  <a href="prd-storyboard.png"><b>PRD 요약 한 장</b><span>가로 A4</span></a>
+  <a href="progress-board.html"><b>진행판 (실제 기록)</b><span>여섯 차례 · 검사 요약 · 걸린 시간</span></a>
+  <a href="lecture-deck-relay.zip"><b>스킬 받기 (zip)</b><span>SKILL.md · 규칙 · 검사 코드 · 공구 — Codex · Claude 공용</span></a>
+  <a href="https://github.com/gkang63-sys/lecture-deck-relay"><b>코드 (GitHub)</b><span>https://github.com/gkang63-sys/lecture-deck-relay</span></a>
+  <a href="script.md"><b>발표 대본</b><span>장마다 말할 것</span></a>
+</div>
+
+<h2>한계</h2>
+<ul class="clean">
+<li>음성 합성 서비스(edge-tts)가 오전부터 거절했다 — Microsoft가 접속 주소를 바꾼 것으로 보인다(edge-tts 이슈 #490). 공개된 우회(새 주소)로 마감했다. 공식 수정은 아니다.</li>
+<li>코드는 지면 그림 속 글과 휴대폰 화면을 대조하지 못한다.</li>
+<li>이번 Claude 계획은 같은 차시의 이전 제작기록을 읽은 뒤에 썼다 — 앞 판과 독립이 아니다.</li>
+</ul>
+<footer>교재 지면 · 지도서 원문 · 강의 덱 자체는 이 사이트에 넣지 않았습니다(저작물). 스킬에는 원문이 없습니다.</footer>
+</div>
+</body>
+</html>
