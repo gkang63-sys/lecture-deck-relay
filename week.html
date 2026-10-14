@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>규칙은 한 번, 일은 두 AI</title>
+<meta name="description" content="교양영어 강의 덱 · 과제 채점 · 학교 공모 신청서를 같은 틀로 자동화한 2주의 기록. 링크 모음.">
+<style>
+  :root { --ink:#16181d; --ink2:#4a505c; --ink3:#868c98; --line:#e4e6eb; --bg:#f6f7f9; --card:#fff;
+          --gpt:#0f7b6c; --gpt-soft:#e3f4f1; --cl:#b4531c; --cl-soft:#fbefe7; --code:#3d5afe; --code-soft:#eaedff; --prof:#6b4fbb; --prof-soft:#f0ecfb; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",Arial,sans-serif; line-height:1.65; word-break:keep-all; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 36px 16px 64px; }
+  .kick { font-size:13px; color:var(--ink3); letter-spacing:.02em; }
+  h1 { font-size:32px; line-height:1.25; margin:6px 0 10px; letter-spacing:-.02em; }
+  .lead { font-size:17px; color:var(--ink2); margin:0 0 18px; }
+  h2 { font-size:20px; margin:40px 0 12px; padding-bottom:6px; border-bottom:2px solid var(--line); }
+  p { margin:8px 0; }
+  .flow { display:flex; flex-wrap:wrap; gap:6px; align-items:center; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; font-size:15px; }
+  .flow span.s { padding:6px 10px; border-radius:8px; font-weight:600; }
+  .flow .a { color:var(--ink3); }
+  .g { background:var(--gpt-soft); color:var(--gpt); } .c { background:var(--cl-soft); color:var(--cl); }
+  .k { background:var(--code-soft); color:var(--code); } .p { background:var(--prof-soft); color:var(--prof); }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .box { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .box h3 { margin:0 0 6px; font-size:16px; }
+  .big { font-size:28px; font-weight:800; letter-spacing:-.02em; }
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .stat b { display:block; font-size:24px; letter-spacing:-.02em; }
+  .stat span { font-size:13px; color:var(--ink2); }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; font-size:15px; }
+  th, td { text-align:left; vertical-align:top; padding:10px 12px; border-bottom:1px solid var(--line); }
+  th { background:#f0f2f5; font-size:13px; color:var(--ink2); }
+  .tbl { overflow-x:auto; }
+  .tag { display:inline-block; font-size:12px; font-weight:700; padding:1px 8px; border-radius:6px; margin-right:4px; }
+  ul.clean { padding-left:20px; margin:6px 0; } ul.clean li { margin:4px 0; }
+  .note { font-size:14px; color:var(--ink2); background:#fff8e6; border:1px solid #f1e2b8; border-radius:10px; padding:10px 14px; margin-top:10px; }
+  .links { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .links a { display:block; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; color:inherit; text-decoration:none; }
+  .links a:hover { border-color:#b9c0cc; }
+  .links b { display:block; font-size:15px; } .links span { font-size:13px; color:var(--ink2); }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; } .chips span { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:4px 12px; font-size:14px; }
+  code { font-family:Consolas,"D2Coding",monospace; background:#eef0f3; padding:1px 6px; border-radius:5px; font-size:.92em; }
+  footer { margin-top:44px; font-size:13px; color:var(--ink3); }
+  @media (max-width: 680px) { h1 { font-size:26px; } .two, .links { grid-template-columns:1fr; } .stats { grid-template-columns:1fr 1fr; } }
+
+  .hero { display:block; background:#16181d; color:#fff; border-radius:14px; padding:18px 20px; text-decoration:none; margin:18px 0 6px; }
+  .hero b { font-size:19px; display:block; } .hero span { color:#c9cfdb; font-size:14px; }
+  .day { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:10px 0; }
+  .day .when { font-size:13px; color:var(--ink3); font-weight:700; letter-spacing:.02em; }
+  .day h3 { margin:2px 0 6px; font-size:18px; }
+  .day .ls { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .day .ls a { font-size:14px; border:1px solid var(--line); border-radius:999px; padding:4px 12px; color:inherit; text-decoration:none; background:#fafbfc; }
+  .day .ls a:hover { border-color:#b9c0cc; }
+  .day .lock { font-size:13px; color:var(--ink2); margin-top:6px; }
+  .day img { display:block; max-width:100%; border:1px solid var(--line); border-radius:8px; margin-top:10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="kick">AI활용 바이브 코딩 실무과정 · 2026-10-14 · 제주대 영어영문학과 강계유</div>
+<h1>규칙은 한 번, 일은 두 AI가 — 확인은 코드가, 확정은 내가</h1>
+<p class="lead">교양영어 강의 덱과 과제 채점, 학교 공모 신청서를 같은 틀 하나로 자동화했습니다.</p>
+<div class="flow"><span class="s p">규칙(스킬 한 파일)</span><span class="a">→</span><span class="s c">만든다 · Claude</span><span class="a">→</span><span class="s g">본다 · GPT(Codex)</span><span class="a">→</span><span class="s k">확인한다 · 코드</span><span class="a">→</span><span class="s p">확정한다 · 교수</span></div>
+
+<a class="hero" href="week-presentation.html"><b>오늘 발표 슬라이드 (11장)</b><span>← → 넘김 · N 발표자 메모 · F 전체 화면</span></a>
+<p style="font-size:14px;margin:4px 2px 0">발표 대본: <a href="week-script.md">week-script.md</a></p>
+
+<div class="day"><div class="when">지난주 · 구글 강사 교육</div><h3>구글 버전 — 강의 슬라이드 웹앱 · 과제 채점 자동화</h3>
+<p>Apps Script · Gemini · 구글 시트 · 폼으로 두 업무를 옮겨 보았습니다. 배운 것: 규칙을 먼저 글로 쓰면 도구가 바뀌어도 옮길 수 있다.</p>
+<div class="ls"><a href="https://lecture-deck-webapp.vercel.app" target="_blank" rel="noopener">소개 페이지(모든 링크)</a><a href="https://github.com/gkang63-sys/lecture-deck-webapp" target="_blank" rel="noopener">코드 · 덱 웹앱</a><a href="https://github.com/gkang63-sys/english-grading-automation" target="_blank" rel="noopener">코드 · 채점 자동화</a><a href="https://script.google.com/macros/s/AKfycbxFvX9PMCdyp9MB19M9EQ4YfD-hanMMJUi_cL_TBDE3t9k7_9LDo001Xl3vV60Jx2FAIw/exec" target="_blank" rel="noopener">웹앱(Apps Script)</a><a href="https://docs.google.com/spreadsheets/d/17wZTxVokPcSDoeyFufnO5zshnAPKFpptvZc3A29z4-4/copy" target="_blank" rel="noopener">채점 시트 사본</a><a href="https://docs.google.com/forms/d/e/1FAIpQLSfYr75oUpXNO88SKsZsct8hMNpbHD8TNpZHyMX8OCExCrVuLA/viewform" target="_blank" rel="noopener">제출 폼</a></div></div>
+
+<div class="day"><div class="when">월 10/12</div><h3>과제 채점 이어달리기 — GPT와 Claude가 나눠서</h3>
+<p>각자 1차 → GPT가 Claude 검토 → Claude 최종 → 교수 확정. 가상 학생 5명: 인용 대조 모두 일치 · 수정본 복원 4/4 · GPT 검토가 Claude의 인용 실수를 잡음.</p>
+<div class="ls"><a href="https://english-grading-relay.vercel.app" target="_blank" rel="noopener">소개 페이지</a><a href="https://english-grading-relay.vercel.app/presentation.html" target="_blank" rel="noopener">발표 슬라이드</a><a href="https://english-grading-relay.vercel.app/run2/%EC%B6%9C%EB%A0%A5/%EA%B5%90%EC%B0%A8%EA%B2%80%ED%86%A0_%EC%9D%BC%EB%9E%8C.html" target="_blank" rel="noopener">교수 확정 화면(가상)</a><a href="https://english-grading-relay.vercel.app/english-grading-relay.zip" target="_blank" rel="noopener">스킬 zip</a></div></div>
+
+<div class="day"><div class="when">화 10/13</div><h3>강의 덱 이어달리기 — Claude가 만들고 GPT가 검토(연습)</h3>
+<p>이미 쓴 차시(ELS1 6-1)를 다시 만들어 시험: 56장 · 영상 5 · GPT 이의 10건 중 7건이 Claude와 코드가 놓친 것. 결정: 실제 제작은 Codex 검토 한 번, Claude가 Codex를 직접 부른다.</p>
+<div class="ls"><a href="https://lecture-deck-relay.vercel.app" target="_blank" rel="noopener">소개 페이지</a><a href="https://lecture-deck-relay.vercel.app/presentation.html" target="_blank" rel="noopener">발표 슬라이드</a><a href="https://lecture-deck-relay.vercel.app/progress-board.html" target="_blank" rel="noopener">진행판</a><a href="https://lecture-deck-relay.vercel.app/PRD.html" target="_blank" rel="noopener">PRD</a><a href="https://lecture-deck-relay.vercel.app/lecture-deck-relay.zip" target="_blank" rel="noopener">스킬 zip</a></div></div>
+
+<div class="day"><div class="when">화 10/13</div><h3>학교 공모 신청서 2건 — 같은 틀을 서류에</h3>
+<p>GNC 온라인 영어강의 개발 신청서: Claude 초안(한글 서식 12쪽) → GPT 검토(지적 16) → Claude 최종(받아들임 15 · 절충 1) → 교수 확정. 기초학력 Level-up(영어) 신청서: 서식 칸 채우기 + 심사 기준 5개 대조표.</p>
+<div class="lock">제출 전 서류라 공개하지 않습니다.</div></div>
+
+<div class="day"><div class="when">수 10/14 · 오늘</div><h3>실제 강의 덱 — ERW1 7-1 「Project Preview — How Accurate Are Memories?」</h3>
+<p>내일(10/15) 수업에 쓰는 덱. 계획 → 조립 → GPT 검토(Claude가 codex exec로 부름, 5분 45초) → 최종. 48장 · 영상 5 · 연습 10 · 넘침 0 · PDF 48쪽 · GPT 이의 6건 → 받아들임 5 · 절충 1. 조립부터 최종 검사 통과까지 20분 45초.</p>
+<img src="week-d71.jpg" alt="ERW1 7-1 표지">
+<div class="lock">교재 지면이 들어 있어 덱 자체는 공개하지 않습니다(수업에서 JNUclass로만).</div></div>
+
+<div class="day"><div class="when">금 10/16</div><h3>학과 워크숍 — 생성형 AI로 다시 설계하는 교양영어 수업</h3>
+<div class="ls"><a href="https://jnu-english-ai-workflow.vercel.app" target="_blank" rel="noopener">워크숍 페이지</a><a href="https://github.com/gkang63-sys/jnu-english-ai-workflow" target="_blank" rel="noopener">코드</a></div></div>
+
+<footer>학생 정보 · 교재 원문 · 제출 전 서류는 넣지 않았습니다. 숫자는 각 작업 폴더의 기록에서 센 값이며, 예전 방식보다 빨라졌는지는 재지 않았습니다.</footer>
+</div>
+</body>
+</html>
