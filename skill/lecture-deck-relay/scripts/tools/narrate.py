@@ -33,10 +33,12 @@ def spoken(t):
     t = t.replace('…', ' ELLIP ')
     reps = [('___', ' blank '), ('&', ' and '), ('→', '. '), ('⇒', '. '), ('·', ', '), ('—', ', '), ('=', ' equals '),
             ('≈', 'about '), ('×', ' by '), ('+', ' plus '), ('Wh-', 'W-H'), ('JNUclass', 'J-N-U class'),
-            ('MS Word file (.docx)', 'Microsoft Word file'), ('script (.docx)', 'script as a Word file'), ('(.docx)', ''), ('.docx', 'dot-docx'),
-            ('23:59', '11:59 p.m.'), ('12:00', '12 o’clock'), ('¶1', ''), ('¶2', ''), ('#', 'number '), ('-ed', 'ed'), ('-ED', 'ed')]
+            ('(.doc or .docx)', ', dot doc or dot docx,'), ('MS Word file (.docx)', 'Microsoft Word file'), ('script (.docx)', 'script as a Word file'), ('(.docx)', ''), ('.docx', 'dot-docx'),
+            ('23:59', '11:59 p.m.'), ('12:00', '12 o’clock'), (' vs. ', ' versus '), ('#', 'number '), ('-ed', 'ed'), ('-ED', 'ed')]
     for a, b in reps: t = t.replace(a, b)
     t = re.sub(r'\bJNU\b', 'J-N-U', t)
+    t = re.sub(r'¶\s?(\d+)', r'paragraph \1', t)                 # ¶4 → paragraph 4 (2026-10-15)
+    t = re.sub(r'\b([a-e])\s?[–-]\s?([a-e])\b', r'\1 to \2', t)       # a–e → a to e
     t = re.sub(r'\bpp\.\s?(\d+)\s?[–-]\s?(\d+)', r'pages \1 to \2', t)
     t = re.sub(r'\bp\.\s?(\d+)', r'page \1', t)
     t = re.sub(r'(\d)\s?–\s?(\d)', r'\1 to \2', t)             # 1–2 minute, 88–90 (en dash만)
@@ -72,16 +74,30 @@ def extract(body_html, with_script=True):
             cls = ch.get('class', []) or []
             if any(c in SKIP for c in cls): continue
             if 'answer' in cls: walk(ch, True); continue
+            if 'quote' in cls:   # 인용 상자: 영어 원문(.q)만 읽는다 (2026-10-15 — 전에는 통째로 빠졌다)
+                qq = ch.select_one('.q')
+                if qq: (ans if in_ans else main).append('\x01' + _txt(qq))
+                continue
+            if 'abc' in cls:     # 보기 a–e
+                for sp in ch.find_all('span', recursive=False):
+                    b = sp.find('b'); lt = b.get_text().strip() if b else ''
+                    if b: b.decompose()
+                    (ans if in_ans else main).append(f'{lt}. {_txt(sp)}' if lt else _txt(sp))
+                continue
             if 'ix' in cls:
                 for row in ch.select('.row'):
                     qq = row.select_one('.q')
                     if not qq: continue
                     for inp in qq.select('input'): inp.replace_with(' blank ')
-                    main.append(re.sub(r'^\s*([a-h]|\d{1,2})\s+(?=[A-Z“"])', r'\1. ', _txt(qq)))   # 'a  Chung Ae …' → 'a. Chung Ae …'
+                    num = row.select_one('.idx'); num = (num.get_text().strip() + '. ') if num and len(ch.select('.row')) > 1 else ''
+                    main.append(num + re.sub(r'^\s*([a-h]|\d{1,2})\s+(?=[A-Z“"])', r'\1. ', _txt(qq)))   # 'a  Chung Ae …' → 'a. Chung Ae …'
+                    opts = [o.get_text(' ').strip() for o in row.select('.opt')]
+                    if opts and max(len(o) for o in opts) > 1:      # 보기가 낱말·구이면 읽는다(a·b·c 같은 글자 보기는 읽지 않는다)
+                        main.append((', '.join(opts[:-1]) + ', or ' + opts[-1] + '?') if len(opts) > 1 else opts[0])
                 for line in ch.select('.stress-line'):
                     for sp in line.select('.spk'): sp.decompose()
                     main.append(line.get_text(' '))
-                chips_ = [c.get_text(' ').strip() for c in ch.select('.pool .card-chip')]
+                chips_ = [_txt(c).strip() for c in ch.select('.pool .card-chip')]
                 if chips_: main.append(', '.join(chips_) + '.')
                 continue
             if 'a-label' in cls: continue
@@ -117,8 +133,8 @@ def extract(body_html, with_script=True):
     def clean(L):
         out = []
         for x in L:
-            kind = 'script' if x.startswith('\x00') else 't'
-            t = spoken(x.lstrip('\x00'))
+            kind = 'script' if x.startswith('\x00') else ('quote' if x.startswith('\x01') else 't')
+            t = spoken(x.lstrip('\x00\x01'))
             if re.search(r'[A-Za-z]{2}', t): out.append((kind, t))
         return out
     return clean(main), clean(ans)
@@ -140,12 +156,12 @@ async def _synth(voice, text, rate):
     key = hashlib.md5(f'{voice}|{rate}|{text}'.encode()).hexdigest()[:16]
     mp3 = CACHE / f'{key}.mp3'; wav = CACHE / f'{key}.wav'
     if not wav.exists():
-        for attempt in range(3):
+        for attempt in range(7):   # 2026-10-14: 429(요청 과다)가 나면 길게 기다렸다 다시 — 2·5·10·20·40·60초
             try:
                 await edge_tts.Communicate(text, voice, rate=rate, proxy=PROXY).save(str(mp3)); break
             except Exception as e:
-                if attempt == 2: raise
-                await asyncio.sleep(2)
+                if attempt == 6: raise
+                await asyncio.sleep([2, 5, 10, 20, 40, 60][attempt])
         subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', str(mp3), '-ar', '24000', '-ac', '1', str(wav)], check=True)
     return wav
 
@@ -176,7 +192,7 @@ async def _clip(name, chunks, pause, sem):
 def synth_jobs(jobs):
     """jobs: {key: [(text, voice, rate), ...]} → {key: {'src','dur','kb'}}. 캐시: 같은 내용이면 다시 만들지 않는다."""
     async def run():
-        sem = asyncio.Semaphore(3); res = {}
+        sem = asyncio.Semaphore(2); res = {}
         async def one(k, chunks):
             name = 'nar_' + hashlib.md5('|'.join(f'{t}|{v}|{r}' for t, v, r in chunks).encode()).hexdigest()[:14]
             out = await _clip(name, chunks, 0.45, sem)

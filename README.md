@@ -1,6 +1,6 @@
 # lecture-deck-relay — Claude가 만들고 GPT가 검토하는 강의 덱
 
-교양영어 강의 덱 제작을 두 AI의 이어달리기로 바꾼 업무 자동화 실습(AI활용 바이브 코딩 실무과정, 2026-10-13).
+교양영어 강의 덱 제작을 이어달리기로 바꾼 업무 자동화(AI활용 바이브 코딩 실무과정 2026-10-13, 10/15 실제 제작 반영): Claude Code 제작 → Codex 검토 → Cowork 검증 → 교수 확정.
 소개 페이지: https://lecture-deck-relay.vercel.app
 
 - `skill/lecture-deck-relay/` — SKILL.md 하나를 Codex(`~/.codex/skills/`)와 Claude(`~/.claude/skills/`)에 같은 폴더로 넣는다. 차례표 · 진행판 · 단계별 검사 · 조립 공구.

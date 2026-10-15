@@ -17,7 +17,7 @@ from relay_common import (ROOT, IN, W, O, CHK, LECTURE_PY, LECTURE_BIN, LECTURE_
 KINDS = {'title', 'greeting', 'howto', 'overview', 'divider', 'page', 'explain', 'script', 'speak',
          'ix_choose', 'ix_type', 'ix_tap', 'ix_sort', 'video', 'wrapup', 'close'}
 R_TYPES = {'원문', '정답', '범위', '일정', '과제', '흐름', '제안'}
-D_TYPES = {'원문', '정답', '번역', '해설', '화면', '조작', '흐름', '표현', '제안'}
+D_TYPES = {'원문', '정답', '번역', '해설', '화면', '조작', '흐름', '표현', '낭독', '제안'}
 NEED_EVIDENCE = {'원문', '정답', '범위', '일정', '과제'}
 CHOICES = {'받아들임', '유지', '절충'}
 
@@ -225,6 +225,73 @@ def one_html(folder, exclude=('_local', '_LMS')):
     return hs
 
 
+# ── 번역 · 낭독 덮개 (2026-10-15 교수 지적: 한국어가 요지뿐 · 낭독이 앞부분만) ──
+EN_KO = r'(?:en|c-en|r-en|t-en|g-en|f-en|q-en|a-en)'
+
+
+def coverage(deck_html, nar_txt, slides):
+    """경고 목록 → (번역 얇은 곳, 낭독 얇은 장). 막지는 않는다 — ④ GPT와 ⑤ Claude가 하나씩 답한다.
+    번역: 영어 6낱말 이상인 짝(.en/.ko · .c-en/.c-ko · 인용 상자 .q/.a …)에서 한국어 글자 수가 영어의 30% 미만(문장 번역은 보통 45–60%).
+    길이만 본다 — 요지로 줄인 번역인지는 ④ GPT가 뜻으로 본다.
+    낭독: 제목 · 섹션 표지 · 영상이 아닌 장에서 낭독 영어 글자가 화면 영어의 40% 미만, 또는 교재 지면 장의 낭독이 200자 미만."""
+    secs = re.split(r'<section class="slide', deck_html)[1:]
+    thin_ko = []
+    for i, sec in enumerate(secs, 1):
+        pairs = list(re.finditer(r'class="' + EN_KO + r'">(.*?)</div>\s*<div class="[a-z-]*ko">(.*?)</div>', sec, re.S))
+        pairs += list(re.finditer(r'<div class="quote[^"]*"><div class="q">(.*?)</div><div class="a">(.*?)</div>', sec, re.S))   # 인용 상자
+        for m in pairs:
+            en = re.sub(r'<[^>]+>', '', m.group(1)); ko = re.sub(r'<[^>]+>', '', m.group(2))
+            if len(en.split()) >= 6 and len(re.sub(r'\s', '', ko)) < 0.30 * len(re.sub(r'\s', '', en)):
+                thin_ko.append(f'{i}장: {en.strip()[:50]!r} → {ko.strip()[:30]!r}')
+    nar = {}
+    for blk in re.split(r'\n(?=\[\d+\] )', nar_txt or ''):
+        mm = re.match(r'\[(\d+)\]', blk)
+        if mm: nar[int(mm.group(1))] = nar.get(int(mm.group(1)), 0) + len(re.findall(r'[A-Za-z]', blk.split('\n', 1)[-1]))
+    thin_nar = []
+    page_nar = 0   # 바로 앞 교재 지면 장이 읽은 양 — 그 뒤 번역 장은 원문을 다시 읽지 않는다(2026-10-15 교수 결정 B안)
+    for s_ in slides:
+        n, kind = s_['n'], s_.get('kind', '')
+        if kind == 'page': page_nar = nar.get(n, 0)
+        elif kind != 'slide': page_nar = 0
+        if kind in ('title', 'divider', 'video'): continue
+        en = len(re.findall(r'[A-Za-z]', re.sub(r'^.*?▸[^가-힣]*', '', s_.get('text', ''))))
+        got = nar.get(n, 0)
+        if kind == 'page' and got < 200: thin_nar.append(f'{n}장(지면): 낭독 {got}자 — 지면의 글을 읽는가')
+        elif kind != 'page' and en > 150 and got < 0.4 * en and not (page_nar >= 200 and en <= 1.3 * page_nar): thin_nar.append(f'{n}장: 낭독 {got}자 / 화면 영어 {en}자')
+    return thin_ko, thin_nar
+
+
+# ── 낭독 · 화면 글 점검 (2026-10-15 ELS1 7-1 Cowork 검토에서 사람이 찾은 것들을 코드로) ──
+TEACHER = re.compile(r"\b(Remind|Ask|Have|Tell|Encourage|Allow|Invite|Put|Give) students\b|\bDraw students'? attention|\bPoint out (that|to)\b|\bCirculate (to|and)\b|\bGo over the instructions", re.I)
+
+
+def narration_lint(nar_txt, slides):
+    """경고 목록. 막지는 않는다 — ④ GPT가 확인하고 ⑤ Claude가 고친다.
+    1 제목 두 번: 낭독 첫 줄과 둘째 줄의 첫 네 낱말이 같다(따옴표 · 부호만 다른 제목).
+    2 빗금: 화면 영어에 낱말 / 낱말(사고 단위 · 보기)이 있는데 낭독에 pause가 없고 or가 있다 — spoken()이 /를 or로 읽는다. say=로 pause를 적는다.
+    3 교사 지시문: 지도서의 교사용 문장(Remind students … · Ask students …)이 학생 화면에 그대로 있다 — 학생에게 하는 말로 바꾸고 원문은 노트로."""
+    w4 = lambda x: re.findall(r'[a-z0-9]+', x.lower())[:4]
+    nar = {}
+    for blk in re.split(r'\n(?=\[\d+\] )', nar_txt or ''):
+        mm = re.match(r'\[(\d+)\]', blk)
+        if mm:
+            nar.setdefault(int(mm.group(1)), []).extend(l.strip() for l in blk.split('\n')[1:] if l.strip())
+    out = []
+    for n, ls in sorted(nar.items()):
+        if len(ls) > 1 and w4(ls[0]) and w4(ls[0]) == w4(ls[1]):
+            out.append(f'{n}장: 제목을 두 번 읽음 — {ls[0][:50]!r}')
+    for s_ in slides:
+        n, txt = s_['n'], re.sub(r'[가-힣「」]', ' ', s_.get('text', ''))
+        body = ' '.join(nar.get(n, []))
+        n_or = lambda x: len(re.findall(r'\bor\b', x, re.I))
+        if re.search(r'[A-Za-z]\s/\s[A-Za-z]', txt) and n_or(body) > n_or(txt):   # 화면보다 낭독에 or가 많다 = 빗금이 or로 읽혔다
+            out.append(f'{n}장: 화면의 빗금(/)이 낭독에서 or로 읽힘(낭독 or {n_or(body)} · 화면 {n_or(txt)}) — say=에 pause로')
+        m = TEACHER.search(s_.get('text', ''))
+        if m:
+            out.append(f'{n}장: 교사 지시문이 학생 화면에 — {m.group(0)!r} (학생에게 하는 말로, 원문은 노트로)')
+    return out
+
+
 # ── ③ draft ──
 def check_draft():
     errors = []
@@ -247,8 +314,14 @@ def check_draft():
     if scr.exists(): shutil.rmtree(scr)
     shutil.copytree(out / 'shots', scr)
     save(O / '초안' / 'slides.json', v.get('text', []))
-    summary = f'{v["slides"]}장 · 연습 {v["ix"]}개 · 넘침 {len(v["overflow"])} · 노트 누락 {len(v["missing_notes"])} · 대본 줄 {okl}/{nl} 원문 일치 · ② 결정 {len(rv.get("items", []))}건'
-    return finish('draft', errors, summary, stamp(deck), deck=rel(deck))
+    nt = O / '초안' / f'{deck.stem}_낭독대본.txt'
+    thin_ko, thin_nar = coverage(deck.read_text(encoding='utf-8'), nt.read_text(encoding='utf-8') if nt.exists() else '', v.get('text', []))
+    lint = narration_lint(nt.read_text(encoding='utf-8') if nt.exists() else '', v.get('text', []))
+    save(O / '초안' / '덮개_경고.json', {'번역': thin_ko, '낭독': thin_nar, '낭독 · 화면 점검': lint})   # ④ GPT가 이 목록을 확인한다
+    for w in thin_ko[:15] + thin_nar[:15] + lint[:15]: print('  ! 경고 ·', w)
+    summary = (f'{v["slides"]}장 · 연습 {v["ix"]}개 · 넘침 {len(v["overflow"])} · 노트 누락 {len(v["missing_notes"])} · 대본 줄 {okl}/{nl} 원문 일치 · ② 결정 {len(rv.get("items", []))}건'
+               f' · 경고: 번역 얇음 {len(thin_ko)} · 낭독 얇음 {len(thin_nar)} · 낭독·화면 {len(lint)}')
+    return finish('draft', errors, summary, stamp(deck), deck=rel(deck), warnings=thin_ko + thin_nar + lint)
 
 
 # ── ④ review_deck ──
@@ -312,7 +385,14 @@ def check_final():
     for d in dec: ch[d.get('choice')] = ch.get(d.get('choice'), 0) + 1
     summary = (f'{v["slides"]}장 · 영상 {au.get("vid")} · 낭독 {au.get("nar")} · 듣기 바 {au.get("aud")} · 넘침 {len(v["overflow"])} · '
                f'PDF {v.get("pdf_pages")}쪽 · 대본 줄 {okl}/{nl} · 결정 {len(ids)}(' + ' · '.join(f'{k} {n}' for k, n in sorted(ch.items())) + ')')
-    return finish('final', errors, summary, stamp(deck, lms[0], W / 'decisions.json'), deck=rel(deck))
+    nt = fin / f'{deck.stem}_낭독대본.txt'
+    fs = [dict(s_, n=s_['n']) for s_ in v.get('text', [])]
+    thin_ko, thin_nar = coverage(deck.read_text(encoding='utf-8'), nt.read_text(encoding='utf-8') if nt.exists() else '', fs)
+    for w in thin_ko[:15] + thin_nar[:15]: print('  ! 경고 ·', w)
+    lint = narration_lint(nt.read_text(encoding='utf-8') if nt.exists() else '', fs)
+    for w in lint[:15]: print('  ! 경고 ·', w)
+    summary += f' · 경고: 번역 얇음 {len(thin_ko)} · 낭독 얇음 {len(thin_nar)} · 낭독·화면 {len(lint)}'
+    return finish('final', errors, summary, stamp(deck, lms[0], W / 'decisions.json'), deck=rel(deck), warnings=thin_ko + thin_nar + lint)
 
 
 if __name__ == '__main__':

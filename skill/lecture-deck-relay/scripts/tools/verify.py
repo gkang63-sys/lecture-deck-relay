@@ -150,6 +150,10 @@ async def main():
         cont = await pg.evaluate("(()=>{let n=0; [...document.querySelectorAll('.slide')].some((s,i)=>{ if(s.querySelector('[data-nar-ans]')){n=i+1;return true;} }); return n;})()")
         if cont:
             await goto(cont); await pg.click('.slide.is-on .nar'); await pg.wait_for_timeout(400)
+            # 2026-10-15 ELS1 7-1: 큰 덱(10MB)을 처음 열면 첫 낭독이 1–2초 늦게 시작한다 — 실제로 재생이 시작될 때(currentTime>0)까지 최대 6초 기다린 뒤 끝으로 감는다
+            for _ in range(30):
+                if await pg.evaluate("(()=>{const b=document.querySelector('.slide.is-on .nar'); const a=window.__nar.pool[b.dataset.nar]; return !!a && a.currentTime>0})()"): break
+                await pg.wait_for_timeout(200)
             r1 = await pg.evaluate("(()=>{const b=document.querySelector('.slide.is-on .nar'); const a=window.__nar.pool[b.dataset.nar]; return {playing:b.classList.contains('playing'), paused:a?a.paused:null, dur:a?Math.round(a.duration):null}})()")
             await pg.evaluate("(()=>{const b=document.querySelector('.slide.is-on .nar'); const a=window.__nar.pool[b.dataset.nar]; a.currentTime=Math.max(0,a.duration-0.2);})()")
             await pg.wait_for_timeout(900)

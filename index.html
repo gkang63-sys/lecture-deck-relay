@@ -21,6 +21,7 @@
   .flow .a { color:var(--ink3); }
   .g { background:var(--gpt-soft); color:var(--gpt); } .c { background:var(--cl-soft); color:var(--cl); }
   .k { background:var(--code-soft); color:var(--code); } .p { background:var(--prof-soft); color:var(--prof); }
+  .w { background:#e8f0fb; color:#1d5fa8; }
   .two { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .box { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
   .box h3 { margin:0 0 6px; font-size:16px; }
@@ -45,14 +46,49 @@
   footer { margin-top:44px; font-size:13px; color:var(--ink3); }
   @media (max-width: 680px) { h1 { font-size:26px; } .two, .links { grid-template-columns:1fr; } .stats { grid-template-columns:1fr 1fr; } }
 </style>
+<style>.w { background:#e8f0fb; color:#1d5fa8; }</style>
 </head>
 <body>
 <div class="wrap">
-<div class="kick">AI활용 바이브 코딩 실무과정 실습 2일차 · 2026-10-13 · 제주대 영어영문학과 강계유</div>
-<h1>Claude가 만들고 GPT가 검토하는 강의 덱</h1>
-<p class="lead">교양영어 강의 덱(교재 지면 · 영어 본문과 한국어 해설 · 연습 · 낭독 · 섹션 영상) 제작을 두 AI의 이어달리기로 바꿨습니다. 어제의 <a href="https://english-grading-relay.vercel.app/">과제 채점 이어달리기</a>와 같은 틀입니다.</p>
+<div class="kick">AI활용 바이브 코딩 실무과정 실습 2일차(10/13) · 10/15 실제 제작 반영 · 제주대 영어영문학과 강계유</div>
+<h1>Claude Code가 만들고, Codex가 검토하고, Cowork가 검증하는 강의 덱</h1>
+<p class="lead">교양영어 강의 덱(교재 지면 · 영어 본문과 한국어 해설 · 연습 · 낭독 · 섹션 영상) 제작을 이어달리기로 바꿨습니다. Claude Code가 만들고, Codex가 초안을 한 번 검토하고, Claude 앱의 Cowork가 기존 스킬로 최종본을 다시 보고, 교수가 확정합니다. <a href="https://english-grading-relay.vercel.app/">과제 채점 이어달리기</a>와 같은 틀입니다.</p>
 
-<div class="flow"><span class="s c">① Claude 계획</span><span class="a">→</span><span class="s g">② GPT 계획 검토</span><span class="a">→</span><span class="s c">③ Claude 조립</span><span class="a">→</span><span class="s g">④ GPT 덱 검토</span><span class="a">→</span><span class="s c">⑤ Claude 최종</span><span class="a">→</span><span class="s p">⑥ 교수 확정</span></div>
+<div class="flow"><span class="s c">① Claude Code 계획</span><span class="a">→</span><span class="s g">② Codex 계획 검토 · 필요할 때만</span><span class="a">→</span><span class="s c">③ Claude Code 조립</span><span class="a">→</span><span class="s g">④ Codex 덱 검토</span><span class="a">→</span><span class="s c">⑤ Claude Code 최종</span><span class="a">→</span><span class="s w">⑤′ Cowork 검증 · Claude Code 반영</span><span class="a">→</span><span class="s p">⑥ 교수 확정</span></div>
+<p style="font-size:14px;color:var(--ink2)">Codex 차례는 Claude Code가 <code>codex exec</code>로 직접 부릅니다. ⑤′은 다른 도구(Cowork)가 ⑥ 전에 최종본을 고쳤을 때의 단계입니다 — Claude Code가 차이를 비교해 기록하고, 처음부터 다시 만들고, 코드 검사를 다시 돌립니다.</p>
+
+<h2>실제 제작 — 7주차 덱 4개 (10/14–15)</h2>
+<div class="stats">
+  <div class="stat"><b>4개 · 223장</b><span>두 과목 7-1 · 7-2 (영상 각 5편) · 모두 JNUclass 게시</span></div>
+  <div class="stat"><b>28 → 25</b><span>Codex 이의 28건 중 받아들임 25 · 유지 1 · 절충 2</span></div>
+  <div class="stat"><b>5분 45초–9분 14초</b><span>Codex 덱 검토 한 번 (codex exec)</span></div>
+  <div class="stat"><b>3 / 4</b><span>Cowork 검증 기록이 있는 덱</span></div>
+</div>
+<div class="tbl" style="margin-top:12px"><table>
+  <tr><th>차시</th><th>장</th><th>④ Codex 검토</th><th>⑤ Claude Code의 결정</th><th>⑤′ Cowork 검증</th></tr>
+  <tr><td>영어읽기와 쓰기 1 · 7-1</td><td>54</td><td>5분 45초 · 이의 6</td><td>받아들임 5 · 절충 1</td><td>교수 지적(번역 · 낭독)으로 다시 씀 · 48 → 54장</td></tr>
+  <tr><td>영어읽기와 쓰기 1 · 7-2</td><td>62</td><td>9분 14초 · 이의 11</td><td>받아들임 10 · 유지 1</td><td>기록 없음 — 교수 검토 반영</td></tr>
+  <tr><td>영어듣기와 말하기 1 · 7-1</td><td>50</td><td>9분 14초 · 이의 6</td><td>받아들임 6</td><td>15건 고침 — Claude Code가 확인해 모두 받아들임</td></tr>
+  <tr><td>영어듣기와 말하기 1 · 7-2</td><td>57</td><td>7분 28초 · 이의 5</td><td>받아들임 4 · 절충 1</td><td>수정 지시 19건 — 모두 고침</td></tr>
+</table></div>
+<div class="note">덱 자체와 교재 지면은 이 사이트에 없습니다(저작물). 장 수는 영상 장을 포함한 최종본 기준입니다.</div>
+
+<h2>Cowork 검증 — 기존 스킬로 한 번 더</h2>
+<p>Cowork는 Claude 앱의 작업 창입니다. 이번 학기 내내 덱을 만들던 스킬(english-lecture-deck · lecture-deck-audio · lecture-deck-video)을 기준으로 Claude Code와 Codex가 만든 최종본을 다시 읽었습니다.</p>
+<div class="two">
+  <div class="box"><h3>Cowork가 잡은 것</h3><ul class="clean">
+    <li>제목을 두 번 읽음 — 따옴표 모양만 다른 같은 제목 (다섯 장)</li>
+    <li>빗금(/)이 「or」로 읽힘 — 끊어 읽기 표시가 소리로 (두 장)</li>
+    <li>교사용 지도서의 지시문이 학생 화면에 그대로</li>
+    <li>표 머리 칸의 대문자 변환으로 발음기호가 /ÆZ/로</li>
+    <li>번역이 요지만, 낭독이 앞부분만 — 문장마다 번역 · 제목부터 끝까지 낭독으로</li></ul></div>
+  <div class="box"><h3>다음부터는 코드가 먼저</h3><ul class="clean">
+    <li>Claude Code가 Cowork의 수정을 하나씩 비교 · 확인한 뒤 받아들이고 기록(⑤′)</li>
+    <li>낭독 · 화면 점검(<code>narration_lint</code>)을 검사 코드에 넣음 — Cowork 이전 본에 돌리면 Cowork가 찾은 것과 같은 8건, 최종본은 0건</li>
+    <li>「번역 얇음 · 낭독 얇음」 경고 — 고치기 전 판에서 번역 7 · 낭독 16을 잡고, 고친 판은 0 · 2</li>
+    <li>④ Codex의 검토 규칙에도 같은 항목을 더함</li></ul></div>
+</div>
+
 
 <p class="note" style="margin-top:14px"><b>2주 전체를 한 장에:</b> <a href="week.html">week.html</a> — 지난주 구글 버전 · 채점 · 강의 덱 · 공모 신청서 · 오늘 실제 덱 · 10/14 발표</p>
 
@@ -63,7 +99,7 @@
 <li>→ 만드는 쪽(Claude)과 보는 쪽(GPT)을 나눴다. 덱 파일은 Claude만 쓴다.</li>
 </ul>
 
-<h2>실제로 돌려 본 결과 — 한 차시를 새 폴더에서</h2>
+<h2>처음 시험 — 한 차시를 새 폴더에서 (10/13)</h2>
 <div class="stats">
   <div class="stat"><b>56장</b><span>계획 = 최종(영상 5 · 연습 10)</span></div>
   <div class="stat"><b>4 + 6</b><span>GPT 이의(계획 + 덱)</span></div>
@@ -80,7 +116,7 @@
 </div>
 
 <h2>실제 제작에는 — 결정</h2>
-<p><b>Claude가 만들고, Codex 초안 검토는 한 번.</b> GPT 차례는 Claude가 <code>ask_gpt.py</code>(codex exec)로 직접 부릅니다. 계획 검토는 새 교재 · 새 단원 때만(<code>운영.md</code>에 「계획 검토: 켬」). 근거: 검토는 값어치가 있었지만(이의 7/10이 놓친 것), 비용은 GPT가 일한 13분보다 교수가 앱 사이에서 넘겨 주기를 기다린 약 35분이었습니다.</p>
+<p><b>Claude가 만들고, Codex 초안 검토는 한 번.</b> GPT 차례는 Claude가 <code>ask_gpt.py</code>(codex exec)로 직접 부릅니다. 계획 검토는 새 교재 · 새 단원 때만(<code>운영.md</code>에 「계획 검토: 켬」). 근거: 검토는 값어치가 있었지만(이의 7/10이 놓친 것), 더 오래 걸린 것은 GPT가 일한 13분이 아니라 교수가 앱 사이에서 넘겨 주기를 기다린 약 35분이었습니다. 10/15부터는 여기에 ⑤′ Cowork 검증을 더해 실제 덱을 만들었습니다.</p>
 
 <h2>열어 보기</h2>
 <div class="links">
@@ -100,6 +136,8 @@
 <li>음성 합성 서비스(edge-tts)가 오전부터 거절했다 — Microsoft가 접속 주소를 바꾼 것으로 보인다(edge-tts 이슈 #490). 공개된 우회(새 주소)로 마감했다. 공식 수정은 아니다.</li>
 <li>코드는 지면 그림 속 글과 휴대폰 화면을 대조하지 못한다.</li>
 <li>이번 Claude 계획은 같은 차시의 이전 제작기록을 읽은 뒤에 썼다 — 앞 판과 독립이 아니다.</li>
+<li>Cowork 검증은 7주차 네 덱 가운데 세 덱에 기록이 있다. 한 덱은 교수 검토로 대신했다.</li>
+<li>7주차 덱은 평소 방식으로 만든 덱과 시간을 견주어 재지 않았다.</li>
 </ul>
 <footer>교재 지면 · 지도서 원문 · 강의 덱 자체는 이 사이트에 넣지 않았습니다(저작물). 스킬에는 원문이 없습니다.</footer>
 </div>

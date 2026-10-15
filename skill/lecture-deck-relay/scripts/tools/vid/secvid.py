@@ -22,7 +22,7 @@ FILL_JS = """(()=>{const s=document.querySelector('.slide.is-on'); if(!s) return
    r.querySelectorAll('.opt').forEach(o=>{ if(al.indexOf(o.textContent.trim().toLowerCase().replace(/[’']/g,"'"))>-1) o.classList.add('sel','ok'); });});
  s.querySelectorAll('.ix [data-s]').forEach(sp=>{const t=sp.dataset.s.toLowerCase().split(/\\s+/);
    sp.querySelectorAll('.w').forEach(w=>{ if(t.indexOf(w.dataset.b)>-1) w.classList.add('hit'); });});
- s.querySelectorAll('.ix .card-chip[data-bin]').forEach(c=>{const bin=[...s.querySelectorAll('.bin')].find(b=>b.dataset.bin===c.dataset.bin);
+ s.querySelectorAll('.ix .card-chip[data-bin]').forEach(c=>{const bin=[...s.querySelectorAll('.bin')].find(b=>b.dataset.bin===c.dataset.bin.split('|')[0]);
    if(bin){ bin.querySelector('.pool').appendChild(c); c.classList.add('ok'); }});})()"""
 COMPOSE = '''<!doctype html><html><head><meta charset="utf-8"><style>%s
 html,body{margin:0;width:1920px;height:1080px;background:#14181C;overflow:hidden;font-family:Inter,"Noto Sans KR",sans-serif}
@@ -64,7 +64,7 @@ def tts_text(en):
     return t
 
 async def synth_all(lines):
-    sem = asyncio.Semaphore(3)
+    sem = asyncio.Semaphore(2)
     async def one(en):
         async with sem: return await _synth(PROF[0], tts_text(en), PROF[1])
     return await asyncio.gather(*(one(en) for _, en, _ in lines))
@@ -119,7 +119,7 @@ async def main(name, dry=False):
     comp = work / 'compose.html'; comp.write_text(COMPOSE % LOCALFONTS, encoding='utf-8')
     visuals = {vis_key(v): v for _, v, _, _ in events}
     async with async_playwright() as p:
-        b = await p.chromium.launch(executable_path=r'C:\Program Files\Google\Chrome\Application\chrome.exe')
+        b = await p.chromium.launch(executable_path=os.environ.get('LECTURE_BROWSER') or r'C:\Program Files\Google\Chrome\Application\chrome.exe')
         ctx = await b.new_context(viewport={'width': 1280, 'height': 720}, device_scale_factor=2); pg = await ctx.new_page()
         await pg.route('**/*', lambda r: r.abort() if r.request.url.startswith('http') else r.continue_())
         vis_path = {}
@@ -127,7 +127,7 @@ async def main(name, dry=False):
             if v[0] == 'crop':
                 c = next(CROPS.glob(v[1] + '.*')); vis_path[key] = c; continue
             out = work / 'vis' / f'{key}.png'; vis_path[key] = out
-            if out.exists(): continue
+            if out.exists() and out.stat().st_mtime > deck_local.stat().st_mtime: continue   # 2026-10-15: 덱을 다시 조립했으면 옛 화면을 쓰지 않는다
             if v[0] == 'deck':
                 o = v[2] if len(v) > 2 else {}
                 url = deck_local.resolve().as_uri() + f'#{v[1]}'

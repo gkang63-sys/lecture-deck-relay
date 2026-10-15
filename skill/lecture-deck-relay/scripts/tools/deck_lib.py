@@ -40,6 +40,18 @@ PAGES = json.load(open('pages_b64.json', encoding='utf-8')) if pathlib.Path('pag
 AUDIO = json.load(open('audio_b64.json', encoding='utf-8')) if pathlib.Path('audio_b64.json').exists() else {}
 
 EXTRA_CSS = '''
+/* ── 2026-10-15 한국어 번역 보강: 칩 · 표 · 보기 안의 번역 줄, 지면 글 번역용 조밀한 짝 ── */
+.card-chip .ko{display:block;font-family:var(--font-ko);font-size:11.5px;font-weight:400;color:var(--ink-3);margin-top:3px;line-height:1.35;text-align:left}
+.card-chip{text-align:left}
+.card-chip.picked .ko{color:rgba(255,255,255,.72)}
+.card-chip.no .ko{color:#D9490F}
+table.sched td .ko{display:block;font-family:var(--font-ko);font-size:12px;font-weight:400;color:var(--ink-3);margin-top:2px;line-height:1.45}
+.chip .ko{display:inline;font-family:var(--font-ko);font-size:11.5px;font-weight:400;color:var(--ink-3);margin-left:6px}
+.pair.rep{margin-bottom:11px}
+.pair.rep .en{font-size:15.5px;line-height:1.5}
+.pair.rep .ko{font-size:13px;line-height:1.58;margin-top:3px}
+.pairs-n .pair.rep::before{top:4px}
+.ix .q .qk{display:block;margin-left:0;margin-top:1px;line-height:1.45}
 /* 모노 라벨 안의 한글은 Noto Sans KR로 (PDF에서 시스템 CJK 폰트로 빠지던 문제) */
 :root{--font-mono:"IBM Plex Mono","Noto Sans KR","SFMono-Regular",Menlo,Consolas,monospace}
 /* ── 4주차 추가 부품 (기획서 index.html에서 빌림): .quote · .timeline · .pill ── */
@@ -348,7 +360,7 @@ class Deck:
     # ── 낭독 등록: body에서 영어를 뽑아 jobs에 넣고 (main_key, ans_key, body) 반환 ──
     #   규칙: 슬라이드마다 컨트롤 하나. 듣기 바(.aud)가 있는 슬라이드는 바만(say를 주지 않는 한 낭독 없음).
     #   say / say_ans: None=자동 추출, False=없음, 문자열·목록=대본. 항목 '@file:PATH'는 음원 파일을 그대로 잇고, '@story:TEXT'는 이야기 목소리로 읽는다.
-    def _narrate(self, body, say=None, say_ans=None, story=False):
+    def _narrate(self, body, say=None, say_ans=None, story=False, title=None):
         n = len(self.S) + 1
         main_key, ans_key = f'n{n}', f'n{n}a'
         has_aud = 'class="aud"' in body
@@ -373,6 +385,14 @@ class Deck:
                 out.append((t, v[0], v[1]))
             return out
         mc = chunks_from(say, auto_main, STORY if story else PROF)
+        # 2026-10-15: 슬라이드 제목도 읽는다(제목 → 본문). say가 제목으로 시작하면 두 번 읽지 않는다.
+        if title and mc:
+            tt = spoken(re.sub(r'<[^>]+>', '', title)).rstrip()
+            if tt and not tt.endswith(('.', '?', '!')): tt += '.'
+            _w = lambda x: re.findall(r'[a-z0-9]+', x.lower())     # 2026-10-15 검토(Cowork): 따옴표 · 문장부호가 달라도 같은 제목이면 두 번 읽지 않는다(첫 네 낱말 비교)
+            tw, sw = _w(tt), _w(mc[0][0]); k = min(4, len(tw))
+            if tt and not (k and sw[:k] == tw[:k]):
+                mc = [(tt, PROF[0], PROF[1])] + mc
         ac = chunks_from(say_ans, auto_ans, PROF) if '<div class="answer' in body else []
         mk = ak = None
         if mc:
@@ -387,7 +407,7 @@ class Deck:
     def slide(self, sec, pg, t_en, t_ko, body, notes, tall=False, mid=False, orb='', cls='', ko_title=False, say=None, say_ans=None, story=False):
         bcls = 'body' + (' tall' if tall else '') + (' mid' if mid else '')
         orbh = '' if orb is None else f'<div class="orb-soft {orb}"></div>'
-        mk, ak, body = self._narrate(body, say, say_ans, story)
+        mk, ak, body = self._narrate(body, say, say_ans, story, title=None if ko_title else t_en)
         self.S.append(f'<section class="slide {cls}">{orbh}{self._head(sec, pg, t_en, t_ko, ko_title, mk, ak)}'
                       f'<div class="{bcls}">{body}</div>{self.foot(notes)}</section>')
 
@@ -467,7 +487,7 @@ class Deck:
         body = tags(tag_items) + cards([('Today · 오늘', today[0], today[1], ''),
                                         ('Homework · 과제', hw[0], hw[1], ''),
                                         ('Next · 다음', nxt[0], nxt[1], '')])
-        mk, ak, body = self._narrate(body, say)
+        mk, ak, body = self._narrate(body, say, title=t_en)
         self.S.append(f'<section class="slide s-close"><div class="orb-soft"></div>{self._head("Wrap-up", pg, t_en, t_ko, False, mk, ak)}'
                       f'<div class="body mid">{body}</div>{self.foot(notes)}</section>')
 
@@ -476,7 +496,7 @@ class Deck:
         ans = answer(a_en, a_ko, label) if a_en else ''
         l = (lead(*lead_) if lead_ else '') + (aud(*audio) if audio else '')
         body = f'{l}<div class="ix-top"><span class="ix-hint">{hint}</span></div><div class="ix">{inner}<div class="fb"></div></div>{ans}'
-        mk, ak, body = self._narrate(body, say, say_ans)
+        mk, ak, body = self._narrate(body, say, say_ans, title=t_en)
         self.S.append(f'<section class="slide">{self._head(sec, pg, t_en, t_ko, False, mk, ak)}'
                       f'<div class="body tall">{body}</div>{self.foot(notes)}</section>')
 
